@@ -13,6 +13,10 @@ var View = {
             fill: 'grey',
             'stroke-opacity': 0.2,
         },
+        blue: {
+            fill: 'blue',
+            'stroke-opacity': 0.2,
+        },
         start: {
             fill: '#0d0',
             'stroke-opacity': 0.2,
@@ -153,6 +157,12 @@ var View = {
             color = value ? nodeStyle.normal.fill : nodeStyle.blocked.fill;
             this.setWalkableAt(gridX, gridY, value);
             break;
+        case 'blue':
+            var node = this.blockedNodes[gridY][gridX];
+            node.data('blue', true);
+            this.colorizeNode(node, nodeStyle.blue.fill);
+            this.zoomNode(node);
+            break;
         case 'opened':
             this.colorizeNode(this.rects[gridY][gridX], nodeStyle.opened.fill);
             this.setCoordDirty(gridX, gridY, true);
@@ -180,6 +190,9 @@ var View = {
         node.animate({
             fill: color
         }, this.nodeColorizeEffect.duration);
+    },
+    getNodeColor: function(gridX, gridY){
+        return this.blockedNodes[gridY][gridX].data('blue');
     },
     zoomNode: function(node) {
         node.toFront().attr({

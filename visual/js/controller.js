@@ -78,13 +78,18 @@ var Controller = StateMachine.create({
             to:   'drawingWall'
         },
         {
+            name: 'drawBlueWall',
+            from: ['ready', 'finished'],
+            to:   'drawingBlueWall'
+        },
+        {
             name: 'eraseWall',
             from: ['ready', 'finished'],
             to:   'erasingWall'
         },
         {
             name: 'rest',
-            from: ['draggingStart', 'draggingEnd', 'drawingWall', 'erasingWall'],
+            from: ['draggingStart', 'draggingEnd', 'drawingWall', 'drawingBlueWall', 'erasingWall'],
             to  : 'ready'
         },
     ],
@@ -123,6 +128,10 @@ $.extend(Controller, {
     ondrawWall: function(event, from, to, gridX, gridY) {
         this.setWalkableAt(gridX, gridY, false);
         // => drawingWall
+    },
+    ondrawBlueWall: function(event, from, to, gridX, gridY) {
+        this.setBlueAt(gridX, gridY);
+        // => drawingBlueWall
     },
     oneraseWall: function(event, from, to, gridX, gridY) {
         this.setWalkableAt(gridX, gridY, true);
@@ -338,6 +347,7 @@ $.extend(Controller, {
     },
     bindEvents: function() {
         $('#draw_area').mousedown($.proxy(this.mousedown, this));
+
         $(window)
             .mousemove($.proxy(this.mousemove, this))
             .mouseup($.proxy(this.mouseup, this));
@@ -399,8 +409,18 @@ $.extend(Controller, {
             this.drawWall(gridX, gridY);
             return;
         }
-        if (this.can('eraseWall') && !grid.isWalkableAt(gridX, gridY)) {
+        if (this.can('drawBlueWall')){
+            console.log(View.getNodeColor(gridX, gridY));
+            if (!View.getNodeColor(gridX, gridY)){
+                this.drawBlueWall(gridX, gridY);
+            }else {
+                this.eraseWall(gridX, gridY);
+            }
+            return;
+        }
+        if (this.current === 'drawingBlueWall' && !grid.isWalkableAt(gridX, gridY)) {
             this.eraseWall(gridX, gridY);
+            return;
         }
     },
     mousemove: function(event) {
@@ -494,6 +514,9 @@ $.extend(Controller, {
     setWalkableAt: function(gridX, gridY, walkable) {
         this.grid.setWalkableAt(gridX, gridY, walkable);
         View.setAttributeAt(gridX, gridY, 'walkable', walkable);
+    },
+    setBlueAt: function(gridX, gridY) {
+        View.setAttributeAt(gridX, gridY, 'blue', true);
     },
     isStartPos: function(gridX, gridY) {
         return gridX === this.startX && gridY === this.startY;
