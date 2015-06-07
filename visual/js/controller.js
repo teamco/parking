@@ -105,29 +105,29 @@ var Controller = StateMachine.create({
     ]
 });
 
-window.setPersist = function(){
-    for (var x = 0; x < this.grid.nodes.length;  x++){
-        for (var y = 0; y < this.grid.nodes[0].length; y++){
-            if (gridPersist[x][y] === 1){
-                console.log(x,y);
-                //this.grid.nodes[x][y] = 1;
-                this.setWalkableAt(y, x, false);
-            }
-        }
-    }
-
-}
-
 window.printGrid = function(g){
     var line = "",
         grid = g || window.grid;
 
     line = "[";
-    for (var i = 0; i < grid.nodes.length; i++){
+
+    for (var x = 0; x < grid.nodes.length; x++){
         line += "[";
-        for (var x = 0; x < grid.nodes[0].length; x++){
-            line += grid.nodes[i][x].walkable? "0,": "1,";
+        for (var y = 0; y < grid.nodes[0].length; y++){
+            if (grid.nodes[x][y].walkable) {
+                line += "0,";
+            }else {
+                if (grid.nodes[x][y].blue) {
+                    line += "2,";
+                } else if (grid.nodes[x][y].orange) {
+                    line += "3,";
+                } else {
+                    line += "1,";
+                }
+            }
+            //line += grid.nodes[i][x].walkable? "0,": "1,";
         }
+
         line = line.substring(0,line.length-1);
         line += "],\n";
     }
@@ -135,10 +135,27 @@ window.printGrid = function(g){
     return line;
 }
 
+
 $.extend(Controller, {
     gridSize: [128, 64], // number of nodes horizontally and vertically
     operationsPerSecond: 300,
-
+    loadPersist: function(){
+        for (var x = 0; x < this.grid.nodes.length;  x++){
+            for (var y = 0; y < this.grid.nodes[0].length; y++){
+                switch(gridPersist[x][y]){
+                    case 1:
+                        that.setWalkableAt(y, x, false);
+                        break;
+                    case 2:
+                        that.setBlueAt(y, x, false);
+                        break;
+                    case 3:
+                        that.setOrangeAt(y, x, false);
+                        break;
+                }
+            }
+        }
+    },
     /**
      * Asynchronous transition from `none` state to `ready` state.
      */
@@ -164,7 +181,7 @@ $.extend(Controller, {
 
         this.hookPathFinding();
 
-        //setPersist.bind(this)();
+        window.that = this;
 
         return StateMachine.ASYNC;
         // => ready
@@ -175,14 +192,21 @@ $.extend(Controller, {
     },
     ondrawBlueWall: function(event, from, to, gridX, gridY) {
         this.setBlueAt(gridX, gridY);
+        delete this.grid.nodes[gridY][gridX].orange;
+        this.grid.nodes[gridY][gridX].blue = true
         // => drawingBlueWall
     },
     ondrawOrangeWall: function(event, from, to, gridX, gridY) {
         this.setOrangeAt(gridX, gridY);
+        delete this.grid.nodes[gridY][gridX].blue;
+        this.grid.nodes[gridY][gridX].orange = true;
         // => drawingOrangeWall
     },
     oneraseWall: function(event, from, to, gridX, gridY) {
+        delete this.grid.nodes[gridX][gridY].blue;
+        delete this.grid.nodes[gridX][gridY].orang;
         this.setWalkableAt(gridX, gridY, true);
+
         // => erasingWall
     },
     onsearch: function(event, from, to) {
@@ -234,6 +258,7 @@ $.extend(Controller, {
             operationCount: this.operationCount,
         });
         View.drawPath(this.path);
+
         // => finished
     },
     onclear: function(event, from, to) {
@@ -282,6 +307,7 @@ $.extend(Controller, {
             enabled: true,
             callback: $.proxy(this.loadpersist, this)
         });
+        this.loadPersist();
         // => [starting, draggingStart, draggingEnd, drawingStart, drawingEnd]
     },
     onstarting: function(event, from, to) {
@@ -576,9 +602,11 @@ $.extend(Controller, {
         View.setAttributeAt(gridX, gridY, 'walkable', walkable);
     },
     setBlueAt: function(gridX, gridY) {
+        this.setWalkableAt(gridX, gridY, false);
         View.setAttributeAt(gridX, gridY, 'blue', true);
     },
     setOrangeAt: function(gridX, gridY) {
+        this.setWalkableAt(gridX, gridY, false);
         View.setAttributeAt(gridX, gridY, 'orange', true);
     },
     isStartPos: function(gridX, gridY) {
