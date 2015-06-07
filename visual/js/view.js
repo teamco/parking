@@ -2,8 +2,12 @@
  * The pathfinding visualization.
  * It uses raphael.js to show the grids.
  */
+function getNodeSize() {
+    var w = screen.width;
+    return (15 * w) / 1280;
+}
 var View = {
-    nodeSize: 15, // width and height of a single node, in pixel
+    nodeSize: getNodeSize(), // width and height of a single node, in pixel
     nodeStyle: {
         normal: {
             fill: 'white',
@@ -59,11 +63,11 @@ var View = {
         'stroke-width': 3,
     },
     supportedOperations: ['opened', 'closed', 'tested'],
-    init: function(opts) {
-        this.numCols      = opts.numCols;
-        this.numRows      = opts.numRows;
-        this.paper        = Raphael('draw_area');
-        this.$stats       = $('#stats');
+    init: function (opts) {
+        this.numCols = opts.numCols;
+        this.numRows = opts.numRows;
+        this.paper = Raphael('draw_area');
+        this.$stats = $('#stats');
     },
     /**
      * Generate the grid asynchronously.
@@ -71,23 +75,23 @@ var View = {
      * Therefore, in order to not to block the rendering of browser ui,
      * I decomposed the task into smaller ones. Each will only generate a row.
      */
-    generateGrid: function(callback) {
+    generateGrid: function (callback) {
         var i, j, x, y,
             rect,
             normalStyle, nodeSize,
             createRowTask, sleep, tasks,
-            nodeSize    = this.nodeSize,
+            nodeSize = this.nodeSize,
             normalStyle = this.nodeStyle.normal,
-            numCols     = this.numCols,
-            numRows     = this.numRows,
-            paper       = this.paper,
-            rects       = this.rects = [],
-            $stats      = this.$stats;
+            numCols = this.numCols,
+            numRows = this.numRows,
+            paper = this.paper,
+            rects = this.rects = [],
+            $stats = this.$stats;
 
         paper.setSize(numCols * nodeSize, numRows * nodeSize);
 
-        createRowTask = function(rowId) {
-            return function(done) {
+        createRowTask = function (rowId) {
+            return function (done) {
                 rects[rowId] = [];
                 for (j = 0; j < numCols; ++j) {
                     x = j * nodeSize;
@@ -105,8 +109,8 @@ var View = {
             };
         };
 
-        sleep = function(done) {
-            setTimeout(function() {
+        sleep = function (done) {
+            setTimeout(function () {
                 done(null);
             }, 0);
         };
@@ -117,13 +121,13 @@ var View = {
             tasks.push(sleep);
         }
 
-        async.series(tasks, function() {
+        async.series(tasks, function () {
             if (callback) {
                 callback();
             }
         });
     },
-    setStartPos: function(gridX, gridY) {
+    setStartPos: function (gridX, gridY) {
         var coord = this.toPageCoordinate(gridX, gridY);
         if (!this.startNode) {
             this.startNode = this.paper.rect(
@@ -132,12 +136,12 @@ var View = {
                 this.nodeSize,
                 this.nodeSize
             ).attr(this.nodeStyle.normal)
-             .animate(this.nodeStyle.start, 1000);
+                .animate(this.nodeStyle.start, 1000);
         } else {
-            this.startNode.attr({ x: coord[0], y: coord[1] }).toFront();
+            this.startNode.attr({x: coord[0], y: coord[1]}).toFront();
         }
     },
-    setEndPos: function(gridX, gridY) {
+    setEndPos: function (gridX, gridY) {
         var coord = this.toPageCoordinate(gridX, gridY);
         if (!this.endNode) {
             this.endNode = this.paper.rect(
@@ -146,72 +150,72 @@ var View = {
                 this.nodeSize,
                 this.nodeSize
             ).attr(this.nodeStyle.normal)
-             .animate(this.nodeStyle.end, 1000);
+                .animate(this.nodeStyle.end, 1000);
         } else {
-            this.endNode.attr({ x: coord[0], y: coord[1] }).toFront();
+            this.endNode.attr({x: coord[0], y: coord[1]}).toFront();
         }
     },
     /**
      * Set the attribute of the node at the given coordinate.
      */
-    setAttributeAt: function(gridX, gridY, attr, value) {
+    setAttributeAt: function (gridX, gridY, attr, value) {
         var color, nodeStyle = this.nodeStyle;
         switch (attr) {
-        case 'walkable':
-            color = value ? nodeStyle.normal.fill : nodeStyle.blocked.fill;
-            this.setWalkableAt(gridX, gridY, value);
-            break;
-        case 'blue':
-            var node = this.blockedNodes[gridY][gridX];
-            node.data('blue', true);
-            this.colorizeNode(node, nodeStyle.blue.fill);
-            this.zoomNode(node);
-            break;
-        case 'orange':
-            var node = this.blockedNodes[gridY][gridX];
-            node.data('orange', true);
-            this.colorizeNode(node, nodeStyle.orange.fill);
-            this.zoomNode(node);
-            break;
-        case 'opened':
-            this.colorizeNode(this.rects[gridY][gridX], nodeStyle.opened.fill);
-            this.setCoordDirty(gridX, gridY, true);
-            break;
-        case 'closed':
-            this.colorizeNode(this.rects[gridY][gridX], nodeStyle.closed.fill);
-            this.setCoordDirty(gridX, gridY, true);
-            break;
-        case 'tested':
-            color = (value === true) ? nodeStyle.tested.fill : nodeStyle.normal.fill;
+            case 'walkable':
+                color = value ? nodeStyle.normal.fill : nodeStyle.blocked.fill;
+                this.setWalkableAt(gridX, gridY, value);
+                break;
+            case 'blue':
+                var node = this.blockedNodes[gridY][gridX];
+                node.data('blue', true);
+                this.colorizeNode(node, nodeStyle.blue.fill);
+                this.zoomNode(node);
+                break;
+            case 'orange':
+                var node = this.blockedNodes[gridY][gridX];
+                node.data('orange', true);
+                this.colorizeNode(node, nodeStyle.orange.fill);
+                this.zoomNode(node);
+                break;
+            case 'opened':
+                this.colorizeNode(this.rects[gridY][gridX], nodeStyle.opened.fill);
+                this.setCoordDirty(gridX, gridY, true);
+                break;
+            case 'closed':
+                this.colorizeNode(this.rects[gridY][gridX], nodeStyle.closed.fill);
+                this.setCoordDirty(gridX, gridY, true);
+                break;
+            case 'tested':
+                color = (value === true) ? nodeStyle.tested.fill : nodeStyle.normal.fill;
 
-            this.colorizeNode(this.rects[gridY][gridX], color);
-            this.setCoordDirty(gridX, gridY, true);
-            break;
-        case 'parent':
-            // XXX: Maybe draw a line from this node to its parent?
-            // This would be expensive.
-            break;
-        default:
-            console.error('unsupported operation: ' + attr + ':' + value);
-            return;
+                this.colorizeNode(this.rects[gridY][gridX], color);
+                this.setCoordDirty(gridX, gridY, true);
+                break;
+            case 'parent':
+                // XXX: Maybe draw a line from this node to its parent?
+                // This would be expensive.
+                break;
+            default:
+                console.error('unsupported operation: ' + attr + ':' + value);
+                return;
         }
     },
-    colorizeNode: function(node, color) {
+    colorizeNode: function (node, color) {
         node.animate({
             fill: color
         }, this.nodeColorizeEffect.duration);
     },
-    getNodeColor: function(gridX, gridY, color){
+    getNodeColor: function (gridX, gridY, color) {
         return this.blockedNodes[gridY][gridX].data(color);
     },
-    zoomNode: function(node) {
+    zoomNode: function (node) {
         node.toFront().attr({
             transform: this.nodeZoomEffect.transform,
         }).animate({
             transform: this.nodeZoomEffect.transformBack,
         }, this.nodeZoomEffect.duration);
     },
-    setWalkableAt: function(gridX, gridY, value) {
+    setWalkableAt: function (gridX, gridY, value) {
         var node, i, blockedNodes = this.blockedNodes;
         if (!blockedNodes) {
             blockedNodes = this.blockedNodes = new Array(this.numRows);
@@ -225,7 +229,7 @@ var View = {
             if (node) {
                 this.colorizeNode(node, this.rects[gridY][gridX].attr('fill'));
                 this.zoomNode(node);
-                setTimeout(function() {
+                setTimeout(function () {
                     node.remove();
                 }, this.nodeZoomEffect.duration);
                 blockedNodes[gridY][gridX] = null;
@@ -240,7 +244,7 @@ var View = {
             this.zoomNode(node);
         }
     },
-    clearFootprints: function() {
+    clearFootprints: function () {
         var i, x, y, coord, coords = this.getDirtyCoords();
         for (i = 0; i < coords.length; ++i) {
             coord = coords[i];
@@ -250,13 +254,13 @@ var View = {
             this.setCoordDirty(x, y, false);
         }
     },
-    clearBlockedNodes: function() {
+    clearBlockedNodes: function () {
         var i, j, blockedNodes = this.blockedNodes;
         if (!blockedNodes) {
             return;
         }
         for (i = 0; i < this.numRows; ++i) {
-            for (j = 0 ;j < this.numCols; ++j) {
+            for (j = 0; j < this.numCols; ++j) {
                 if (blockedNodes[i][j]) {
                     blockedNodes[i][j].remove();
                     blockedNodes[i][j] = null;
@@ -264,7 +268,7 @@ var View = {
             }
         }
     },
-    drawPath: function(path) {
+    drawPath: function (path) {
         if (!path.length) {
             return;
         }
@@ -274,19 +278,19 @@ var View = {
     /**
      * Given a path, build its SVG represention.
      */
-    buildSvgPath: function(path) {
+    buildSvgPath: function (path) {
         var i, strs = [], size = this.nodeSize;
 
         strs.push('M' + (path[0][0] * size + size / 2) + ' ' +
-                  (path[0][1] * size + size / 2));
+            (path[0][1] * size + size / 2));
         for (i = 1; i < path.length; ++i) {
             strs.push('L' + (path[i][0] * size + size / 2) + ' ' +
-                      (path[i][1] * size + size / 2));
+                (path[i][1] * size + size / 2));
         }
 
         return strs.join('');
     },
-    clearPath: function() {
+    clearPath: function () {
         if (this.path) {
             this.path.remove();
         }
@@ -294,7 +298,7 @@ var View = {
     /**
      * Helper function to convert the page coordinate to grid coordinate
      */
-    toGridCoordinate: function(pageX, pageY) {
+    toGridCoordinate: function (pageX, pageY) {
         return [
             Math.floor(pageX / this.nodeSize),
             Math.floor(pageY / this.nodeSize)
@@ -303,13 +307,13 @@ var View = {
     /**
      * helper function to convert the grid coordinate to page coordinate
      */
-    toPageCoordinate: function(gridX, gridY) {
+    toPageCoordinate: function (gridX, gridY) {
         return [
             gridX * this.nodeSize,
             gridY * this.nodeSize
         ];
     },
-    showStats: function(opts) {
+    showStats: function (opts) {
         var texts = [
             'length: ' + Math.round(opts.pathLength * 100) / 100,
             'time: ' + opts.timeSpent + 'ms',
@@ -317,7 +321,7 @@ var View = {
         ];
         $('#stats').show().html(texts.join('<br>'));
     },
-    setCoordDirty: function(gridX, gridY, isDirty) {
+    setCoordDirty: function (gridX, gridY, isDirty) {
         var x, y,
             numRows = this.numRows,
             numCols = this.numCols,
@@ -335,7 +339,7 @@ var View = {
 
         this.coordDirty[gridY][gridX] = isDirty;
     },
-    getDirtyCoords: function() {
+    getDirtyCoords: function () {
         var x, y,
             numRows = this.numRows,
             numCols = this.numCols,
