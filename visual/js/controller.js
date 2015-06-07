@@ -278,6 +278,7 @@ $.extend(Controller, {
         // => ready
     },
     onloadpersist: function(event, from, to) {
+        this.clearAll();
         this.loadPersist();
     },
 
