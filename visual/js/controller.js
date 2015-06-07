@@ -100,8 +100,38 @@ var Controller = StateMachine.create({
     ]
 });
 
+window.setPersist = function(){
+    for (var x = 0; x < this.grid.nodes.length;  x++){
+        for (var y = 0; y < this.grid.nodes[0].length; y++){
+            if (gridPersist[x][y] === 1){
+                console.log(x,y);
+                //this.grid.nodes[x][y] = 1;
+                this.setWalkableAt(y, x, false);
+            }
+        }
+    }
+
+}
+
+window.printGrid = function(g){
+    var line = "",
+        grid = g || window.grid;
+
+    line = "[";
+    for (var i = 0; i < grid.nodes.length; i++){
+        line += "[";
+        for (var x = 0; x < grid.nodes[0].length; x++){
+            line += grid.nodes[i][x].walkable? "0,": "1,";
+        }
+        line = line.substring(0,line.length-1);
+        line += "],\n";
+    }
+    line += "]";
+    return line;
+}
+
 $.extend(Controller, {
-    gridSize: [64, 36], // number of nodes horizontally and vertically
+    gridSize: [128, 64], // number of nodes horizontally and vertically
     operationsPerSecond: 300,
 
     /**
@@ -112,6 +142,8 @@ $.extend(Controller, {
             numRows = this.gridSize[1];
 
         this.grid = new PF.Grid(numCols, numRows);
+
+        window.grid = this.grid;
 
         View.init({
             numCols: numCols,
@@ -126,6 +158,8 @@ $.extend(Controller, {
         this.$buttons = $('.control_button');
 
         this.hookPathFinding();
+
+        //setPersist.bind(this)();
 
         return StateMachine.ASYNC;
         // => ready
