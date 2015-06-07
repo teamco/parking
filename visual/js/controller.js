@@ -308,7 +308,6 @@ $.extend(Controller, {
             enabled: true,
             callback: $.proxy(this.loadpersist, this)
         });
-        this.loadPersist();
         // => [starting, draggingStart, draggingEnd, drawingStart, drawingEnd]
     },
     onstarting: function(event, from, to) {
@@ -493,7 +492,6 @@ $.extend(Controller, {
             return;
         }
         if (this.can('drawBlueWall')){
-            console.log(View.getNodeColor(gridX, gridY));
             if (!View.getNodeColor(gridX, gridY, 'blue') && !View.getNodeColor(gridX, gridY, 'orange')){
                 this.drawBlueWall(gridX, gridY);
             }else {
