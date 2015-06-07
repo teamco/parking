@@ -17,6 +17,10 @@ var View = {
             fill: 'blue',
             'stroke-opacity': 0.2,
         },
+        orange: {
+            fill: 'orange',
+            'stroke-opacity': 0.2,
+        },
         start: {
             fill: '#0d0',
             'stroke-opacity': 0.2,
@@ -163,6 +167,12 @@ var View = {
             this.colorizeNode(node, nodeStyle.blue.fill);
             this.zoomNode(node);
             break;
+        case 'orange':
+            var node = this.blockedNodes[gridY][gridX];
+            node.data('orange', true);
+            this.colorizeNode(node, nodeStyle.orange.fill);
+            this.zoomNode(node);
+            break;
         case 'opened':
             this.colorizeNode(this.rects[gridY][gridX], nodeStyle.opened.fill);
             this.setCoordDirty(gridX, gridY, true);
@@ -191,8 +201,8 @@ var View = {
             fill: color
         }, this.nodeColorizeEffect.duration);
     },
-    getNodeColor: function(gridX, gridY){
-        return this.blockedNodes[gridY][gridX].data('blue');
+    getNodeColor: function(gridX, gridY, color){
+        return this.blockedNodes[gridY][gridX].data(color);
     },
     zoomNode: function(node) {
         node.toFront().attr({

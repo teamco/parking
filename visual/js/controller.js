@@ -83,16 +83,21 @@ var Controller = StateMachine.create({
             to:   'drawingBlueWall'
         },
         {
+            name: 'drawOrangeWall',
+            from: ['ready', 'finished'],
+            to:   'drawingOrangeWall'
+        },
+        {
             name: 'eraseWall',
             from: ['ready', 'finished'],
             to:   'erasingWall'
         },
         {
             name: 'rest',
-            from: ['draggingStart', 'draggingEnd', 'drawingWall', 'drawingBlueWall', 'erasingWall'],
+            from: ['draggingStart', 'draggingEnd', 'drawingWall', 'drawingBlueWall', 'drawingOrangeWall', 'erasingWall'],
             to  : 'ready'
         },
-    ],
+    ]
 });
 
 $.extend(Controller, {
@@ -132,6 +137,10 @@ $.extend(Controller, {
     ondrawBlueWall: function(event, from, to, gridX, gridY) {
         this.setBlueAt(gridX, gridY);
         // => drawingBlueWall
+    },
+    ondrawOrangeWall: function(event, from, to, gridX, gridY) {
+        this.setOrangeAt(gridX, gridY);
+        // => drawingOrangeWall
     },
     oneraseWall: function(event, from, to, gridX, gridY) {
         this.setWalkableAt(gridX, gridY, true);
@@ -411,14 +420,18 @@ $.extend(Controller, {
         }
         if (this.can('drawBlueWall')){
             console.log(View.getNodeColor(gridX, gridY));
-            if (!View.getNodeColor(gridX, gridY)){
+            if (!View.getNodeColor(gridX, gridY, 'blue') && !View.getNodeColor(gridX, gridY, 'orange')){
                 this.drawBlueWall(gridX, gridY);
             }else {
-                this.eraseWall(gridX, gridY);
+                if (!View.getNodeColor(gridX, gridY, 'orange')){
+                    this.drawOrangeWall(gridX, gridY);
+                } else{
+                    this.eraseWall(gridX, gridY);
+                }
             }
             return;
         }
-        if (this.current === 'drawingBlueWall' && !grid.isWalkableAt(gridX, gridY)) {
+        if (this.current === 'drawingOrangeWall' && !grid.isWalkableAt(gridX, gridY)) {
             this.eraseWall(gridX, gridY);
             return;
         }
@@ -518,6 +531,9 @@ $.extend(Controller, {
     setBlueAt: function(gridX, gridY) {
         View.setAttributeAt(gridX, gridY, 'blue', true);
     },
+    setOrangeAt: function(gridX, gridY) {
+        View.setAttributeAt(gridX, gridY, 'orange', true);
+    },
     isStartPos: function(gridX, gridY) {
         return gridX === this.startX && gridY === this.startY;
     },
@@ -526,5 +542,5 @@ $.extend(Controller, {
     },
     isStartOrEndPos: function(gridX, gridY) {
         return this.isStartPos(gridX, gridY) || this.isEndPos(gridX, gridY);
-    },
+    }
 });
