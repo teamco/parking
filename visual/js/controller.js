@@ -48,6 +48,11 @@ var Controller = StateMachine.create({
             to:   'ready'
         },
         {
+            name: 'loadpersist',
+            from: '*',
+            to:   'ready'
+        },
+        {
             name: 'clear',
             from: ['finished', 'modified'],
             to:   'ready'
@@ -247,6 +252,9 @@ $.extend(Controller, {
         }, View.nodeColorizeEffect.duration * 1.2);
         // => ready
     },
+    onloadpersist: function(event, from, to) {
+        setPersist();
+    },
 
     /**
      * The following functions are called on entering states.
@@ -268,6 +276,11 @@ $.extend(Controller, {
             text: 'Clear Walls',
             enabled: true,
             callback: $.proxy(this.reset, this),
+        },{
+            id: 4,
+            text: 'Load Persist',
+            enabled: true,
+            callback: $.proxy(this.loadpersist, this)
         });
         // => [starting, draggingStart, draggingEnd, drawingStart, drawingEnd]
     },

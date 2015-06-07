@@ -3,7 +3,9 @@
  */
 var Panel = {
     init: function() {
-        var $algo = $('#algorithm_panel');
+        var $algo = $('#algorithm_panel'),
+            $play = $('#play_panel');
+
 
         $('.panel').draggable();
         $('.accordion').accordion({
@@ -15,8 +17,11 @@ var Panel = {
         $('#hide_instructions').click(function() {
             $('#instructions_panel').slideUp();
         });
-        $('#play_panel').css({
+        $play.css({
             top: $algo.offset().top + $algo.outerHeight() + 20
+        });
+        $('#admin_panel').css({
+            top: $play.offset().top + $play.outerHeight() + 20
         });
         $('#button2').attr('disabled', 'disabled');
     },
