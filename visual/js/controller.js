@@ -278,7 +278,7 @@ $.extend(Controller, {
         // => ready
     },
     onloadpersist: function(event, from, to) {
-        setPersist();
+        this.loadPersist();
     },
 
     /**
