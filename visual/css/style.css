@@ -2,6 +2,8 @@ body {
     padding: 0px;
     margin: 0px;
     overflow: hidden;
+    background-image: url("../../image/map.png");
+    background-size: cover;
 }
 
 input {
@@ -140,4 +142,8 @@ footer {
 
 .spinner {
     width: 2em;
+}
+
+rect {
+    fill-opacity: 0.3;
 }
