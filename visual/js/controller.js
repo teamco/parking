@@ -53,6 +53,11 @@ var Controller = StateMachine.create({
             to:   'ready'
         },
         {
+            name: 'storepersist',
+            from: '*',
+            to:   'ready'
+        },
+        {
             name: 'clear',
             from: ['finished', 'modified'],
             to:   'ready'
@@ -106,33 +111,28 @@ var Controller = StateMachine.create({
 });
 
 window.printGrid = function(g){
-    var line = "",
+    var matrix = "",
         grid = g || window.grid;
 
-    line = "[";
-
+    matrix = [];
     for (var x = 0; x < grid.nodes.length; x++){
-        line += "[";
+        matrix.push([]);
         for (var y = 0; y < grid.nodes[0].length; y++){
             if (grid.nodes[x][y].walkable) {
-                line += "0,";
+                matrix[x].push(0);
             }else {
                 if (grid.nodes[x][y].blue) {
-                    line += "2,";
+                    matrix[x].push(2);
                 } else if (grid.nodes[x][y].orange) {
-                    line += "3,";
+                    matrix[x].push(3);
                 } else {
-                    line += "1,";
+                    matrix[x].push(1);
                 }
             }
             //line += grid.nodes[i][x].walkable? "0,": "1,";
         }
-
-        line = line.substring(0,line.length-1);
-        line += "],\n";
     }
-    line += "]";
-    return line;
+    return matrix;
 }
 
 
@@ -140,21 +140,26 @@ $.extend(Controller, {
     gridSize: [128, 64], // number of nodes horizontally and vertically
     operationsPerSecond: 300,
     loadPersist: function(){
-        for (var x = 0; x < this.grid.nodes.length;  x++){
-            for (var y = 0; y < this.grid.nodes[0].length; y++){
-                switch(gridPersist[x][y]){
-                    case 1:
-                        that.setWalkableAt(y, x, false);
-                        break;
-                    case 2:
-                        that.setBlueAt(y, x, false);
-                        break;
-                    case 3:
-                        that.setOrangeAt(y, x, false);
-                        break;
+        var fireBase = new Firebase('https://dazzling-fire-7859.firebaseio.com/');
+        fireBase.child('myGrid').on('value', function(snapshot){
+            var gridPersist = snapshot.val();
+            for (var x = 0; x < this.grid.nodes.length;  x++){
+                for (var y = 0; y < this.grid.nodes[0].length; y++){
+                    switch(gridPersist[x][y]){
+                        case 1:
+                            this.setWalkableAt(y, x, false);
+                            break;
+                        case 2:
+                            this.setBlueAt(y, x, false);
+                            break;
+                        case 3:
+                            this.setOrangeAt(y, x, false);
+                            break;
+                    }
                 }
             }
-        }
+        }.bind(this));
+
     },
     /**
      * Asynchronous transition from `none` state to `ready` state.
@@ -281,6 +286,10 @@ $.extend(Controller, {
         this.clearAll();
         this.loadPersist();
     },
+    onstorepersist: function(event, from, to) {
+        var fireBase = new Firebase('https://dazzling-fire-7859.firebaseio.com/');
+        fireBase.set({'myGrid' : printGrid(this.grid)});
+    },
 
     /**
      * The following functions are called on entering states.
@@ -307,6 +316,11 @@ $.extend(Controller, {
             text: 'Load Persist',
             enabled: true,
             callback: $.proxy(this.loadpersist, this)
+        },{
+            id: 5,
+            text: 'Store Persist',
+            enabled: true,
+            callback: $.proxy(this.storepersist, this)
         });
         // => [starting, draggingStart, draggingEnd, drawingStart, drawingEnd]
     },
