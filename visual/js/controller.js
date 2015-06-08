@@ -18,6 +18,11 @@ var Controller = StateMachine.create({
             to:   'searching'
         },
         {
+            name: 'search',
+            from: 'randomstarting',
+            to:   'searching'
+        },
+        {
             name: 'pause',
             from: 'searching',
             to:   'paused'
@@ -51,6 +56,11 @@ var Controller = StateMachine.create({
             name: 'loadpersist',
             from: '*',
             to:   'ready'
+        },
+        {
+            name: 'randompath',
+            from: '*',
+            to: 'ready'
         },
         {
             name: 'storepersist',
@@ -133,7 +143,29 @@ window.printGrid = function(g){
         }
     }
     return matrix;
-}
+};
+
+ARandomPath = function ARandomPath(){};
+
+ARandomPath.prototype.findPath = function(startX, startY, endX, endY, grid) {
+    var  startNode = grid.getNodeAt(startX, startY),
+        endNode = grid.getNodeAt(endX, endY),
+        node, neighbors, neighbor, i, l, x, y, ng;
+
+    neighbors = grid.getNeighbors(node, diagonalMovement);
+    for (i = 0, l = neighbors.length; i < l; ++i) {
+        neighbor = neighbors[i];
+        if (neighbor.closed) {
+            continue;
+        }
+
+        x = neighbor.x;
+        y = neighbor.y;
+
+    }
+    debugger;
+    return [];
+};
 
 
 $.extend(Controller, {
@@ -225,6 +257,19 @@ $.extend(Controller, {
 
         // => erasingWall
     },
+
+    nextRandomCell: function() {
+        var arr = [1,2,3,4,5,6,7,8];
+        var newRandArr = [];
+        var i, n;
+        for (i=0; i < arr.length; i++){
+            n = Math.floor(Math.random() * arr.length);
+            newRandArr.push(arr.splice(n,1)[0]);
+            i--;
+        };
+        return newRandArr;
+    },
+
     onsearch: function(event, from, to) {
         var grid,
             timeStart, timeEnd,
@@ -294,6 +339,71 @@ $.extend(Controller, {
         }, View.nodeColorizeEffect.duration * 1.2);
         // => ready
     },
+
+    getCarDirection: function(){
+        this.direction = this.direction || 'down';
+        x = this.startX;
+        y = this.startY;
+        //Down
+        if (this.direction === 'down' && this.grid.nodes[x+1][y].walkable && (x+1) < this.grid.nodes[0].length) {
+            return [x+1,y];
+        }else {
+            this.direction = 'right';
+        };
+        //right
+        if (this.direction === 'right' && this.grid.nodes[x][y-1].walkable && (y-1) >= 0) {
+            return [x,y-1];
+        }else {
+            this.direction = 'down';
+            return this.getCarDirection();
+        }
+        //Down
+        if (this.direction === 'left' && this.grid.nodes[x-1][y].walkable && (x-1) >= 0) {
+            return [x-1,y];
+        }else {
+            this.direction = 'down';
+            return this.getCarDirection();
+        }
+
+    },
+
+    onrandompath: function (event, from, to) {
+        // When clearing the colorized nodes, there may be
+        // nodes still animating, which is an asynchronous procedure.
+        // Therefore, we have to defer the `abort` routine to make sure
+        // that all the animations are done by the time we clear the colors.
+        // The same reason applies for the `onreset` event handler.
+        setTimeout(function() {
+            Controller.clearOperations();
+            Controller.clearFootprints();
+            debugger;
+            Controller.start();
+        }, View.nodeColorizeEffect.duration * 1.2);
+
+        /*var i = 0;
+        for (i = 0; i < 5; i++) {
+            setTimeout(function(){
+                jQuery('#button1').click();
+
+            },i*300);
+        }*/
+/*
+        var grid,
+            timeStart, timeEnd,
+            finder = new PF.randomFinder();
+
+        timeStart = window.performance ? performance.now() : Date.now();
+        grid = this.grid.clone();
+
+        this.path = finder.findPath(
+            this.startX, this.startY, this.endX, this.endY, grid
+        );
+        this.operationCount = this.operations.length;
+        timeEnd = window.performance ? performance.now() : Date.now();
+        this.timeSpent = (timeEnd - timeStart).toFixed(4);
+
+        this.loop();*/
+    },
     onloadpersist: function(event, from, to) {
         this.clearAll();
         this.loadPersist();
@@ -337,9 +447,27 @@ $.extend(Controller, {
             text: 'Store Persist',
             enabled: true,
             callback: $.proxy(this.storepersist, this)
-        });
+        },
+        {
+            id: 6,
+            text: 'Random Path',
+            enabled: true,
+            callback: $.proxy(this.randompath, this)
+        }
+        );
         // => [starting, draggingStart, draggingEnd, drawingStart, drawingEnd]
     },
+    onrandomstarting: function (){
+        console.log('=> starting');
+        // Clears any existing search progress
+        this.clearFootprints();
+        this.setButtonStates({
+            id: 2,
+            enabled: true,
+        });
+        this.search();
+    },
+
     onstarting: function(event, from, to) {
         console.log('=> starting');
         // Clears any existing search progress
@@ -362,7 +490,7 @@ $.extend(Controller, {
             id: 2,
             text: 'Pause Search',
             enabled: true,
-            callback: $.proxy(this.pause, this),
+            callback: $.proxy(this.pause, this)
         });
         // => [paused, finished]
     },
