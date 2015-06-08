@@ -163,7 +163,7 @@ ARandomPath.prototype.findPath = function(startX, startY, endX, endY, grid) {
         y = neighbor.y;
 
     }
-    debugger;
+
     return [];
 };
 
@@ -281,6 +281,7 @@ $.extend(Controller, {
         this.path = finder.findPath(
             this.startX, this.startY, this.endX, this.endY, grid
         );
+
         this.operationCount = this.operations.length;
         timeEnd = window.performance ? performance.now() : Date.now();
         this.timeSpent = (timeEnd - timeStart).toFixed(4);
@@ -376,7 +377,6 @@ $.extend(Controller, {
         setTimeout(function() {
             Controller.clearOperations();
             Controller.clearFootprints();
-            debugger;
             Controller.start();
         }, View.nodeColorizeEffect.duration * 1.2);
 
