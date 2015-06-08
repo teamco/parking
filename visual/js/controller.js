@@ -221,6 +221,7 @@ $.extend(Controller, {
 
         timeStart = window.performance ? performance.now() : Date.now();
         grid = this.grid.clone();
+
         this.path = finder.findPath(
             this.startX, this.startY, this.endX, this.endY, grid
         );
@@ -287,8 +288,10 @@ $.extend(Controller, {
         this.loadPersist();
     },
     onstorepersist: function(event, from, to) {
-        var fireBase = new Firebase('https://dazzling-fire-7859.firebaseio.com/');
-        fireBase.set({'myGrid' : printGrid(this.grid)});
+        if (confirm('Are you sure you want to store persist?')){
+            var fireBase = new Firebase('https://dazzling-fire-7859.firebaseio.com/');
+            fireBase.set({'myGrid' : printGrid(this.grid)});
+        }
     },
 
     /**
@@ -604,12 +607,16 @@ $.extend(Controller, {
     setStartPos: function(gridX, gridY) {
         this.startX = gridX;
         this.startY = gridY;
-        View.setStartPos(gridX, gridY);
+        this.startPosArray = this.startPosArray || [];
+        this.startPosArray.push([gridX, gridY]);
+        View.setStartPos(gridX, gridY, this.startPosArray);
     },
     setEndPos: function(gridX, gridY) {
         this.endX = gridX;
         this.endY = gridY;
-        View.setEndPos(gridX, gridY);
+        this.endPosArray = this.endPosArray || [];
+        this.endPosArray.push([gridX, gridY]);
+        View.setEndPos(gridX, gridY, this.endPosArray);
     },
     setWalkableAt: function(gridX, gridY, walkable) {
         this.grid.setWalkableAt(gridX, gridY, walkable);
