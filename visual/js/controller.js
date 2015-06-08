@@ -139,8 +139,9 @@ window.printGrid = function(g){
 $.extend(Controller, {
     gridSize: [128, 64], // number of nodes horizontally and vertically
     operationsPerSecond: 300,
+    fbInstance: 'https://dazzling-fire-7859.firebaseio.com/',
     loadPersist: function(){
-        var fireBase = new Firebase('https://dazzling-fire-7859.firebaseio.com/');
+        var fireBase = new Firebase(this.fbInstance);
         fireBase.child('myGrid').on('value', function(snapshot){
             var gridPersist = snapshot.val();
             for (var x = 0; x < this.grid.nodes.length;  x++){
@@ -151,9 +152,11 @@ $.extend(Controller, {
                             break;
                         case 2:
                             this.setBlueAt(y, x, false);
+                            this.grid.nodes[x][y].blue = true;
                             break;
                         case 3:
                             this.setOrangeAt(y, x, false);
+                            this.grid.nodes[x][y].orange = true;
                             break;
                     }
                 }
@@ -209,7 +212,7 @@ $.extend(Controller, {
     },
     oneraseWall: function(event, from, to, gridX, gridY) {
         delete this.grid.nodes[gridX][gridY].blue;
-        delete this.grid.nodes[gridX][gridY].orang;
+        delete this.grid.nodes[gridX][gridY].orange;
         this.setWalkableAt(gridX, gridY, true);
 
         // => erasingWall
@@ -289,7 +292,7 @@ $.extend(Controller, {
     },
     onstorepersist: function(event, from, to) {
         if (confirm('Are you sure you want to store persist?')){
-            var fireBase = new Firebase('https://dazzling-fire-7859.firebaseio.com/');
+            var fireBase = new Firebase(this.fbInstance);
             fireBase.set({'myGrid' : printGrid(this.grid)});
         }
     },
