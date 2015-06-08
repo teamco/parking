@@ -591,6 +591,14 @@ $.extend(Controller, {
         $(window)
             .mousemove($.proxy(this.mousemove, this))
             .mouseup($.proxy(this.mouseup, this));
+        $(window).keypress(function(event) {
+            if (!(event.which == 113 && event.ctrlKey) && !(event.which == 17)){
+                return true;
+            }
+            View.toogleRectVisibility();
+            event.preventDefault();
+            return false;
+        });
     },
     loop: function() {
         var interval = 1000 / this.operationsPerSecond;

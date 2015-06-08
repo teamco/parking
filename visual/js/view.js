@@ -68,6 +68,21 @@ var View = {
         this.paper = Raphael('draw_area');
         this.$stats = $('#stats');
     },
+    toogleRectVisibility: function(){
+        this.rects.forEach(function(e){
+            var rect;
+            for(var x = 0; x<e.length; x++){
+                rect = e[x];
+                if (!!rect.data('hidden')){
+                    rect.data('hidden', false);
+                    rect.show();
+                } else {
+                    rect.data('hidden', true);
+                    rect.hide();
+                }
+            }
+        })
+    },
     drawpath1: function ( canvas, pathstr, duration, attr, callback )
     {
         var guide_path = canvas.path( pathstr ).attr( { stroke : "rgba(0,0,0,0)" ,  fill: "rgba(0,0,0,0)" } );
