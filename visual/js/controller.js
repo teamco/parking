@@ -139,7 +139,8 @@ window.printGrid = function(g){
 $.extend(Controller, {
     gridSize: [128, 64], // number of nodes horizontally and vertically
     operationsPerSecond: 300,
-    fbInstance: 'https://dazzling-fire-7859.firebaseio.com/',
+    fbInstance: 'https://dazzling-fire-7859.firebaseio.com/', // Prod
+    //fbInstance: 'https://paveldemo.firebaseio.com//', // Test
     loadPersist: function(){
         var fireBase = new Firebase(this.fbInstance);
         fireBase.child('myGrid').on('value', function(snapshot){
@@ -162,7 +163,14 @@ $.extend(Controller, {
                 }
             }
         }.bind(this));
-
+        fireBase.child('aStartPoint').on('value', function(snapshot){
+            var point = snapshot.val();
+            this.setStartPos(point.startX, point.startY);
+        }.bind(this));
+        fireBase.child('aEndPoint').on('value', function(snapshot){
+            var point = snapshot.val();
+            this.setEndPos(point.endX, point.endY);
+        }.bind(this));
     },
     /**
      * Asynchronous transition from `none` state to `ready` state.
@@ -293,7 +301,9 @@ $.extend(Controller, {
     onstorepersist: function(event, from, to) {
         if (confirm('Are you sure you want to store persist?')){
             var fireBase = new Firebase(this.fbInstance);
-            fireBase.set({'myGrid' : printGrid(this.grid)});
+            var aStartPoint = {startX : Controller.startX, startY : Controller.startY}
+            var aEndPoint = {endX : Controller.endX, endY : Controller.endY}
+            fireBase.set({myGrid : printGrid(), aStartPoint : aStartPoint, aEndPoint : aEndPoint})
         }
     },
 
