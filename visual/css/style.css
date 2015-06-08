@@ -147,3 +147,23 @@ footer {
 rect {
     fill-opacity: 0.3;
 }
+
+svg {
+    width: 100%;
+    height: 100%;
+}
+
+.panel_collapse {
+    background-image: url(../lib/themes/images/ui-icons_f29a00_256x240.png);
+    background-position: -64px -16px;
+    top: 14px;
+    width: 16px;
+    position: absolute;
+    height: 16px;
+    left: 256px;
+}
+
+.panel_collapse.closed {
+    background-position: -32px -16px;
+}
+

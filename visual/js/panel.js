@@ -24,6 +24,12 @@ var Panel = {
             top: $play.offset().top + $play.outerHeight() + 20
         });
         $('#button2').attr('disabled', 'disabled');
+
+        var $algoCollapse = $('.panel_collapse');
+        $algoCollapse.click(function(){
+            $(this).toggleClass("closed");
+            $('#algorithm_panel .accordion').slideToggle("slow");
+        })
     },
     /**
      * Get the user selected path-finder.
