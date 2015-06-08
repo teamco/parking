@@ -59,8 +59,7 @@ var View = {
         transformBack: 's1.0',
     },
     pathStyle: {
-        stroke: 'yellow',
-        'stroke-width': 3,
+        stroke : "rgba(0,0,0,0)" ,  fill: "rgba(0,0,0,0)"
     },
     supportedOperations: ['opened', 'closed', 'tested'],
     init: function (opts) {
@@ -68,6 +67,39 @@ var View = {
         this.numRows = opts.numRows;
         this.paper = Raphael('draw_area');
         this.$stats = $('#stats');
+    },
+    drawpath1: function ( canvas, pathstr, duration, attr, callback )
+    {
+        var guide_path = canvas.path( pathstr ).attr( { stroke : "rgba(0,0,0,0)" ,  fill: "rgba(0,0,0,0)" } );
+        var path = canvas.path( guide_path.getSubpath( 0, 1 ) ).attr( attr );
+        var total_length = guide_path.getTotalLength( guide_path );
+        duration = duration * total_length/600;
+        var last_point = guide_path.getPointAtLength( 0 );
+        var cir = canvas.circle(last_point.x, last_point.y, 15, 0).attr({
+            stroke: "none",
+            fill: "url(lib/themes/images/car.png)"
+        });
+        var start_time = new Date().getTime();
+        var interval_length = 50;
+        var result = path;
+        var interval_id = setInterval( function()
+        {
+            var elapsed_time = new Date().getTime() - start_time;
+            var this_length = elapsed_time / duration * total_length;
+            var subpathstr = guide_path.getSubpath( 0, this_length );
+            var lp = guide_path.getPointAtLength(this_length);
+            cir.attr({cx : lp.x, cy: lp.y});
+            attr.path = subpathstr;
+            path.animate( attr, interval_length );
+            if ( elapsed_time >= duration )
+            {
+                clearInterval( interval_id );
+                cir.remove();
+                if ( callback != undefined ) callback();
+                guide_path.remove();
+            }
+        }, interval_length );
+        return result;
     },
     /**
      * Generate the grid asynchronously.
@@ -273,7 +305,8 @@ var View = {
             return;
         }
         var svgPath = this.buildSvgPath(path);
-        this.path = this.paper.path(svgPath).attr(this.pathStyle);
+        this.path = this.drawpath1(this.paper, svgPath, 5000, this.pathStyle);
+        //this.path = this.paper.path(svgPath).attr(this.pathStyle);//
     },
     /**
      * Given a path, build its SVG represention.

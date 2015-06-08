@@ -455,7 +455,8 @@ $.extend(Controller, {
                 return;
             }
             Controller.step();
-            setTimeout(loop, interval);
+            //setTimeout(loop, 0.00000001);
+            loop();
         })();
     },
     step: function() {
@@ -471,7 +472,7 @@ $.extend(Controller, {
             isSupported = View.supportedOperations.indexOf(op.attr) !== -1;
         } while (!isSupported);
 
-        View.setAttributeAt(op.x, op.y, op.attr, op.value);
+        //View.setAttributeAt(op.x, op.y, op.attr, op.value);
     },
     clearOperations: function() {
         this.operations = [];
